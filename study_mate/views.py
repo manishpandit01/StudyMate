@@ -9,8 +9,6 @@ from django.contrib.auth import authenticate, login
 
 
 def signup_view(request):
-    print("Signup called")
-    print(request.method)
     if request.method == "POST":
 
         full_name = request.POST.get("full_name", "")
