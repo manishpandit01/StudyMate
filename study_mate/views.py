@@ -3,7 +3,9 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login,logout
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 
 # Create your views here.
 
@@ -82,4 +84,13 @@ def login_view(request):
             messages.error(request, "Invalid email or password.")
     return render(request, "study_mate/login.html")
 
-  
+@login_required(login_url='login')
+def dashboard_view(request):
+    return render(request, "study_mate/dashboard.html")
+
+@login_required(login_url='login')
+@require_POST
+def logout_view(request):
+    logout(request)
+    messages.success(request, "You have been logged out.")
+    return redirect("login")
