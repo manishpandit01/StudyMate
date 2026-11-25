@@ -1,11 +1,15 @@
 from django.contrib import messages
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login,logout
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
+
+from .forms import SubjectForm
+from .models import Subject
+from django.db.models import Q
 
 # Create your views here.
 
@@ -77,15 +81,17 @@ def login_view(request):
                 request.session.set_expiry(1209600)  # 2 weeks
             else:
                 request.session.set_expiry(0)
-                
+
             return redirect("dashboard")
         else:
             messages.error(request, "Invalid email or password.")
     return render(request, "study_mate/login.html")
 
+
 @login_required(login_url='login')
 def dashboard_view(request):
     return render(request, "study_mate/dashboard.html")
+
 
 @login_required(login_url='login')
 @require_POST
@@ -93,3 +99,62 @@ def logout_view(request):
     logout(request)
     messages.success(request, "You have been logged out.")
     return redirect("login")
+
+
+@login_required(login_url='login')
+def subjects_view(request):
+    subjects = Subject.objects.filter(user=request.user)
+    search_query = request.GET.get("q", "").strip()
+    if search_query:
+        subjects = subjects.filter(
+            Q(name__icontains=search_query) |
+            Q(description__icontains=search_query)
+        )
+
+    semester = request.GET.get("semester", "")
+    if semester in ["winter", "summer"]:
+        subjects = subjects.filter(semester=semester)
+        sort = request.GET.get("sort", "recent")
+        if sort == "name":
+            subjects = subjects.order_by("name")
+        else:
+            subjects = subjects.order_by("-created_at")
+
+        if request.method == "POST":
+            form = SubjectForm(request.POST)
+
+            if form.is_valid():
+                subject_name = form.cleaned_data["name"]
+                if Subject.objects.filter(user=request.user, name__iexact=subject_name).exists():
+                    messages.error(
+                        request, "You already have a subject with this name.")
+                else:
+                    subject = form.save(commit=False)
+                    subject.user = request.user
+                    subject.save()
+
+                messages.success(request, "Subject added successfully.")
+                return redirect("subjects")
+        else:
+            form = SubjectForm()
+
+    context = {
+        "subjects": subjects,
+        "form": form,
+        "search_query": search_query,
+        "selected_semester": semester,
+        "sort": sort,
+    }
+    return render(request, "study_mate/subjects.html", context)
+
+
+@login_required(login_url='login')
+def subject_detail_view(request, subject_id):
+    subject = get_object_or_404(
+        Subject,
+        id=subject_id,
+        user=request.user)
+    return render(request,
+                  "study_mate/subject_detail.html",
+                  {"subject": subject}
+                  )
