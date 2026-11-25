@@ -113,38 +113,39 @@ def subjects_view(request):
 
     semester = request.GET.get("semester", "")
     if semester in ["winter", "summer"]:
-        subjects = subjects.filter(semester=semester)
-        sort = request.GET.get("sort", "recent")
-        if sort == "name":
-            subjects = subjects.order_by("name")
-        else:
-            subjects = subjects.order_by("-created_at")
+        subjects = subjects.filter(semester__iexact=semester)
+        
+    sort = request.GET.get("sort", "recent")
+    if sort == "name":
+        subjects = subjects.order_by("name")
+    else:
+        subjects = subjects.order_by("-created_at")
 
-        if request.method == "POST":
-            form = SubjectForm(request.POST)
+    if request.method == "POST":
+        form = SubjectForm(request.POST)
 
-            if form.is_valid():
-                subject_name = form.cleaned_data["name"]
-                if Subject.objects.filter(user=request.user, name__iexact=subject_name).exists():
-                    messages.error(
-                        request, "You already have a subject with this name.")
-                else:
-                    subject = form.save(commit=False)
-                    subject.user = request.user
-                    subject.save()
+        if form.is_valid():
+            subject_name = form.cleaned_data["name"]
+            
+            if Subject.objects.filter(user=request.user, name__iexact=subject_name).exists():
+                messages.error(request, "You already have a subject with this name.")
+            else:
+                subject = form.save(commit=False)
+                subject.user = request.user
+                subject.save()
 
                 messages.success(request, "Subject added successfully.")
                 return redirect("subjects")
-        else:
-            form = SubjectForm()
+    else:
+        form = SubjectForm()
 
     context = {
-        "subjects": subjects,
-        "form": form,
-        "search_query": search_query,
-        "selected_semester": semester,
-        "sort": sort,
-    }
+            "subjects": subjects,
+            "form": form,
+            "search_query": search_query,
+            "selected_semester": semester,
+            "sort": sort,
+                    }
     return render(request, "study_mate/subjects.html", context)
 
 

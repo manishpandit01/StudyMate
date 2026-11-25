@@ -1,0 +1,169 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>My Subjects | StudyMate</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
+</head>
+
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <a class="brand" href="{% url 'dashboard' %}"><span class="brand-mark"><i
+              class="bi bi-mortarboard"></i></span>StudyMate AI</a>
+      </div>
+      <nav class="side-nav">
+        <a href="{% url 'dashboard' %}"><i class="bi bi-grid"></i>Dashboard</a><a class="active"
+          href="{% url 'subjects' %}"><i class="bi bi-book"></i>My Subjects</a><a href="upload.html"><i
+            class="bi bi-folder2-open"></i>Study Materials</a><a href="ask.html"><i class="bi bi-patch-question"></i>Ask
+          Question</a><a href="history.html"><i class="bi bi-clock-history"></i>Question History</a><a
+          href="analytics.html"><i class="bi bi-bar-chart"></i>Analytics &amp; Reports</a><a href="settings.html"><i
+            class="bi bi-gear"></i>Settings</a>
+      </nav>
+
+      <form action="{% url 'logout' %}" method="POST" class="logout-form">
+        {% csrf_token %}
+        <button class="side-nav logout-link" type="submit">
+          <i class="bi bi-box-arrow-right"></i>Logout
+        </button>
+      </form>
+    </aside>
+    <main class="app-main">
+      <header class="topbar">
+        <label class="top-search"><i class="bi bi-search"></i><input placeholder="Search study materials..."
+            aria-label="Search study materials" /></label><button class="icon-button" aria-label="Notifications">
+          <i class="bi bi-bell"></i></button><button class="btn profile-button p-0">
+          <span class="avatar">{{request.user.first_name|default:request.user.username|first|upper}}</span><span
+            class="profile-name">{{request.user.first_name|default:request.user.username}}</span>
+        </button>
+      </header>
+      <div class="page-content">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        <div class="page-heading">
+          <div>
+            <h1>My Subjects</h1>
+            <p>Manage your subjects and study materials.</p>
+          </div>
+          <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#subjectModal">
+            <i class="bi bi-plus-lg"></i> Add Subject
+          </button>
+        </div>
+        <form action="{% url 'subjects' %}" method="GET" class="d-flex gap-2 mb-3 flex-wrap">
+          <input type="text" class="form-control" name="q" style="max-width: 300px" placeholder="Search subjects..."
+            value="{{search_query}}" />
+
+          <select class="form-select" name="semester" style="max-width: 180px">
+            <option value="">All Semesters</option>
+            <option value="winter" {% if selected_semester == "winter" %} selected{% endif %}>winter</option>
+            <option value="summer" {% if selected_semester == "summer" %} selected{% endif %}>summer</option>
+          </select>
+          <select class="form-select" name="sort" style="max-width: 160px">
+            <option value="recent" {% if sort == "recent" %}selected{% endif %}>Sort by: Recent</option>
+            <option value="name" {% if sort == "name" %}selected{% endif %}>Name</option>
+          </select>
+          <button class="btn btn-outline-primary" type="submit">Apply</button>
+        </form>
+      </div>
+      <div class="row g-3">
+        {% for subject in subjects %}
+        <div class="col-md-6 col-xl-4 subject-item">
+          <article class="subject-card">
+            <span class="stat-icon"><i class="bi bi-book"></i></span>
+            <h3>{{subject.name}}</h3>
+            <p>
+              {{subject.description|default:"No description available."}}
+            </p>
+            <span class="badge-soft"><i class="bi bi-folder"></i> material</span>
+            <span class="badge-soft"><i class="bi bi-patch-question"></i> 19 questions</span>
+            <hr />
+            <div class="d-flex justify-content-between align-items-center">
+              <small class="small-muted">Added: {{subject.created_at|date:"M d, Y"}} </small>
+              <a class="btn btn-light btn-sm" href="{% url 'subject_detail' subject.id %}">Open Subject</a>
+            </div>
+          </article>
+        </div>
+
+        {% empty %}
+        <div class="col-12">
+          <div class="panel text-center p-5">
+            <i class="bi bi-book display-4 text-secondary"></i>
+            <h4 class="mt-3">No Subjects Found</h4>
+            <p class="text-muted">
+              Add your first subject to organize your study materials.</p>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#subjectModal">
+              <i class="bi bi-plus-lg"></i>
+              Add New Subject
+            </button>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <!-- <div class="panel mt-4 d-flex align-items-center justify-content-between gap-3">
+        <div>
+          <strong>Looking for another course or subject?</strong>
+          <div class="panel-subtitle">
+            Add more subjects to categorize your study materials and track
+            AI-assisted questions.
+          </div>
+        </div>
+        <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#subjectModal">
+          + Add New Subject
+        </button>
+      </div> -->
+  </div>
+  </main>
+  </div>
+  <div class="modal fade" id="subjectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <form class="modal-content" method="POST" action="{% url 'subjects' %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h2 class="modal-title fs-5">Add a subject</h2>
+          <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <label class="form-label" for="{{form.name.id_for_label}}">Subject name</label>
+          {{form.name}}
+          {% for error in form.name.errors %}
+          <div class="text-danger small">{{ error }}</div>
+          {% endfor %}
+
+          <label for="{{form.description.id_for_label}}" class="form-label">Description</label>
+          {{form.description}}
+          {% for error in form.description.errors %}
+          <div class="text-danger small">{{ error }}</div>
+          {% endfor %}
+
+          <label for="{{form.semester.id_for_label}}" class="form-label">Semester</label>
+          {{form.semester}}
+          {% for error in form.semester.errors %}
+          <div class="text-danger small">{{ error }}</div>
+          {% endfor %}
+        </div>
+    <div class="modal-footer">
+      <button class="btn btn-light" type="button" data-bs-dismiss="modal">
+        Cancel</button>
+        <button class="btn btn-primary" type="submit">Add Subject</button>
+    </div>
+    </form>
+  </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{% static 'js/subjects.js' %}"></script>
+</body>
+
+</html>

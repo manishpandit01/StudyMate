@@ -1,7 +1,5 @@
 from django import forms
-
-from . import Subject
-
+from .models import Subject
 
 class SubjectForm(forms.ModelForm):
     class Meta:

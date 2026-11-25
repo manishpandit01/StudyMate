@@ -7,5 +7,6 @@ urlpatterns = [
     path("login/",views.login_view,name="login"),
     path("dashboard/",views.dashboard_view,name="dashboard"),
     path("logout/",views.logout_view,name="logout"),
-    path("subjects/",views.subject_list_view,name="subjects"),
+    path("subjects/",views.subjects_view,name="subjects"),
+    path("subjects/<int:subject_id>/",views.subject_detail_view,name="subject_detail"),
 ]

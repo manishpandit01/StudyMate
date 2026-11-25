@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 # Create your models here.
 
 class Subject(models.Model):
-    SEMESTER_CHOICES = [("winter", "Winter"), ("summer", "Summer")]
+    SEMESTER_CHOICES = [("Winter", "Winter"), ("Summer", "Summer")]
     user=models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -16,7 +16,7 @@ class Subject(models.Model):
     description=models.TextField(blank=True)
     semester=models.CharField(max_length=30,
                               choices=SEMESTER_CHOICES,
-                              default="winter")
+                              default="Winter")
     created_at=models.DateTimeField(auto_now_add=True)
     
     class Meta:
