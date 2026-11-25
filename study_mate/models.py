@@ -19,4 +19,12 @@ class Subject(models.Model):
                               default="winter")
     created_at=models.DateTimeField(auto_now_add=True)
     
-   
+    class Meta:
+        ordering=["-created_at"]
+        constraints=[
+            models.UniqueConstraint(fields=["user", "name"], 
+                                    name="unique_subject_per_user")
+        ]
+    
+    def __str__(self):
+        return self.name
