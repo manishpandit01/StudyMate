@@ -78,7 +78,6 @@ def login_view(request):
             else:
                 request.session.set_expiry(0)
                 
-            messages.success(request, "Login successfull.")
             return redirect("dashboard")
         else:
             messages.error(request, "Invalid email or password.")
