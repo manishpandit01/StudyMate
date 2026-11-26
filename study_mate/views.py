@@ -7,7 +7,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 
-from .forms import SubjectForm
+from .forms import StudyMaterialForm, SubjectForm
 from .models import Subject
 from django.db.models import Q
 
@@ -159,3 +159,25 @@ def subject_detail_view(request, subject_id):
                   "study_mate/subject_detail.html",
                   {"subject": subject}
                   )
+
+@login_required(login_url='login')
+def upload_study_material_view(request):
+    if request.method == "POST":
+        form = StudyMaterialForm(request.POST, request.FILES, user=request.user)
+        if form.is_valid():
+            material = form.save(commit=False)
+            material.user = request.user
+            allowed_extensions = ['.pdf', '.docx']
+            file_name = material.file.name.lower()
+           
+            if material.file.size > 10 * 1024 * 1024:  # 10 MB limit
+               form.add_error('file', "File size exceeds the 10MB limit.")
+            elif not file_name.endswith(allowed_extensions):
+                form.add_error('file', "Only PDF files and DOCX files are allowed.")
+            else:
+                material.save()
+                messages.success(request, "Study material uploaded successfully.")
+                return redirect("subject_detail", subject_id=material.subject.id)    
+    else:
+        form = StudyMaterialForm(user=request.user)
+    return render(request, "study_mate/upload_study_material.html", {"form": form})

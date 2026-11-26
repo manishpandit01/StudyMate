@@ -33,7 +33,7 @@ class StudyMaterialForm(forms.ModelForm):
             "title": forms.TextInput(attrs=
                                     {"class": "form-control",
                                     "placeholder": "Enter document title"}),
-            "file": forms.ClearableFileInput(attrs={"class": "visually-hidden","accept": "application/pdf"}),
+            "file": forms.ClearableFileInput(attrs={"class": "visually-hidden","accept": ".pdf,.docx"}),
         }
     
     def __init__(self, *args, **kwargs):
