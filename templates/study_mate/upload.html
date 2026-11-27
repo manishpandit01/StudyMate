@@ -1,0 +1,195 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Upload Study Material | StudyMate</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
+</head>
+
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <a class="brand" href="{% url 'dashboard' %}"><span class="brand-mark"><i
+              class="bi bi-mortarboard"></i></span>StudyMate AI</a>
+      </div>
+      <nav class="side-nav">
+        <a href="{% url 'dashboard' %}"><i class="bi bi-grid"></i>Dashboard</a><a href="{% url 'subjects' %}"><i
+            class="bi bi-book"></i>My Subjects</a><a class="active" href="{% url 'upload' %}"><i
+            class="bi bi-folder2-open"></i>Study Materials</a><a href="ask.html"><i class="bi bi-patch-question"></i>Ask
+          Question</a><a href="history.html"><i class="bi bi-clock-history"></i>Question History</a><a
+          href="analytics.html"><i class="bi bi-bar-chart"></i>Analytics &amp; Reports</a><a href="settings.html"><i
+            class="bi bi-gear"></i>Settings</a>
+      </nav>
+      <form action="{% url 'logout' %}" method="post" class="logout-form">
+        {% csrf_token %}
+        <button class="side-nav logout-link" type="submit">
+          <i class="bi bi-box-arrow-right"></i>Logout
+        </button>
+      </form>
+
+    </aside>
+
+
+    <main class="app-main">
+
+
+      <header class="topbar">
+        <label class="top-search"><i class="bi bi-search"></i><input placeholder="Search study materials..."
+            aria-label="Search study materials" /></label><button class="icon-button" aria-label="Notifications">
+          <i class="bi bi-bell"></i></button><button class="btn profile-button p-0">
+          <span class="avatar">{{ request.user.first_name|first|upper }}</span><span class="profile-name">
+            {{request.user.first_name}}</span>
+        </button>
+      </header>
+
+
+      <div class="page-content">
+        <div class="page-heading">
+          <div>
+            <h1>Upload Study Material</h1>
+            <p>Upload your lecture notes, textbooks, or study documents.</p>
+          </div>
+        </div>
+
+
+        <div class="row g-4 justify-content-center">
+          <div class="col-xl-8">
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button class="btn-close" type="button" data-bs-dismiss="alert" aria-label="Close">
+              </button>
+            </div>
+            {% endfor %}
+            {% endif %}
+            <form method="POST" enctype="multipart/form-data" action="{% url 'upload' %}">
+              {% csrf_token %}
+              <div class="panel mb-3">
+                <label class="drop-zone d-block" data-drop-zone for="id_file"><span class="stat-icon mb-2"><i
+                      class="bi bi-file-earmark-pdf"></i></span><strong class="d-block">Drag and drop your PDF
+                    here</strong><span class="small-muted">or choose a file from your computer</span><span
+                    class="d-block mt-3"><span class="btn btn-primary btn-sm">Choose PDF</span></span><span
+                    class="small-muted d-block mt-2">Supported format: PDF • DOCX • Maximum file size: 10
+                    MB</span></label>
+                {{form.file}}
+                {% for error in form.file.errors %}
+                <div class="text-danger small mt-2">{{ error }}</div>
+                {% endfor %}
+                <!-- <input
+                    class="visually-hidden"
+                    id="pdf-file"
+                    type="file"
+                    accept="application/pdf"
+                    data-file-input
+                  /> -->
+                <div class="upload-file mt-3 d-flex align-items-center gap-3">
+                  <span class="stat-icon text-danger bg-danger-subtle"><i class="bi bi-file-earmark-pdf"></i></span>
+                  <div class="flex-grow-1">
+                    <div class="small fw-semibold" data-file-name>
+                      No file selected
+                    </div>
+                    <small class="small-muted" data-file-size></small>
+                  </div>
+                  <button class="btn btn-link text-muted p-1" type="button" data-remove-file aria-label="Remove file">
+                    <i class="bi bi-x-lg"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="panel">
+                <div class="mb-3">
+                  <label class="form-label" for="id_subject">Select Subject</label>
+                  {{ form.subject }}
+                  {% for error in form.subject.errors %}
+                  <div class="text-danger small">{{ error }}</div>
+                  {% endfor %}
+                </div>
+                <!-- <select class="form-select" id="subject" required>
+                      <option value="">Choose a subject</option>
+                      <option selected>Computer Networks</option>
+                      <option>Data Structures &amp; Algorithms</option>
+                      <option>Operating Systems</option>
+                      <option>Database Management Systems</option>
+                    </select> -->
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="id_title">Document Title</label>
+
+                {{ form.title }}
+                {% for error in form.title.errors %}
+                <div class="text-danger small">{{ error }}</div>
+                {% endfor %}
+              </div>
+              <button class="btn btn-primary w-100" type="submit">
+                <i class="bi bi-upload"></i> Upload &amp; Process
+              </button>
+
+            </form>
+          </div>
+
+          <aside class="col-xl-4">
+            <div class="panel h-100">
+              <h2 class="panel-title">Processing Pipeline</h2>
+              <p class="panel-subtitle mb-3">
+                Real-time status of AI document indexing and analysis.
+              </p>
+              <div class="pipeline-step">
+                <span class="pipeline-dot"><i class="bi bi-check"></i></span>
+                <div>
+                  <strong>Uploading...</strong>
+                  <div class="small-muted">
+                    Securely transferring PDF file (2.4 MB)
+                  </div>
+                </div>
+              </div>
+              <div class="pipeline-step">
+                <span class="pipeline-dot"><i class="bi bi-file-text"></i></span>
+                <div>
+                  <strong>Extracting text...</strong>
+                  <div class="small-muted">
+                    Parsing vector fonts and graphics
+                  </div>
+                </div>
+              </div>
+              <div class="pipeline-step pending">
+                <span class="pipeline-dot"><i class="bi bi-list-task"></i></span>
+                <div>
+                  <strong>Creating study sections...</strong>
+                  <div class="small-muted">
+                    Generating flashcards &amp; summaries
+                  </div>
+                </div>
+              </div>
+
+              <div class="pipeline-step pending">
+                <span class="pipeline-dot"><i class="bi bi-check"></i></span>
+                <div>
+                  <strong>Ready!</strong>
+                  <div class="small-muted">
+                    Material available in My Subjects
+                  </div>
+
+                </div>
+              </div>
+              <div class="alert alert-light small-muted mt-3 mb-0">
+                <i class="bi bi-lightbulb text-primary"></i> StudyMate AI
+                automatically builds interactive quizzes from uploaded chapter
+                notes.
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{% static 'js/app.js' %}"></script>
+</body>
+
+</html>

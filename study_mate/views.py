@@ -167,7 +167,7 @@ def upload_study_material_view(request):
         if form.is_valid():
             material = form.save(commit=False)
             material.user = request.user
-            allowed_extensions = ['.pdf', '.docx']
+            allowed_extensions = ('.pdf', '.docx')
             file_name = material.file.name.lower()
            
             if material.file.size > 10 * 1024 * 1024:  # 10 MB limit
@@ -180,4 +180,4 @@ def upload_study_material_view(request):
                 return redirect("subject_detail", subject_id=material.subject.id)    
     else:
         form = StudyMaterialForm(user=request.user)
-    return render(request, "study_mate/upload_study_material.html", {"form": form})
+    return render(request, "study_mate/upload.html", {"form": form})
