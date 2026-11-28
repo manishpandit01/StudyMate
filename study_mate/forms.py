@@ -46,10 +46,10 @@ class StudyMaterialForm(forms.ModelForm):
         
         self.fields["subject"].queryset = Subject.objects.filter(user=user)
         
-class QuestionForm(forms.ModleForm):
+class QuestionForm(forms.ModelForm):
     class Meta:
         model=Question
-        field=['subject','material','question']
+        fields=['subject','material','question']
         
         widgets={
             "subject":forms.Select(attrs={
@@ -65,8 +65,7 @@ class QuestionForm(forms.ModleForm):
                 "id":"question",
                 "rows":5,
                 "maxlength":1000,
-                "placeholder":("Find your answer here!!!"),
-            
+                "placeholder":"Find your answer here!!!",
             "data-question-input":"",
             "required":True
              }),
@@ -74,7 +73,7 @@ class QuestionForm(forms.ModleForm):
     
     def __init__(self, *args, **kwargs):
         user=kwargs.pop("user")
-        super().__init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         
         self.fields["subject"].queryset=Subject.objects.filter(
             user=user
@@ -90,7 +89,7 @@ class QuestionForm(forms.ModleForm):
         subject=cleaned_data.get("subject")
         material=cleaned_data.get("material")
         
-        if material and subject and material.subjetc_id != subject.id:
+        if material and subject and material.subject_id != subject.id:
             self.add_error(
                 "material",
                 "please select a document to the belonging to this subject."
