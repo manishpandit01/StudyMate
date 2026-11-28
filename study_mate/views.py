@@ -7,8 +7,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 
-from .forms import StudyMaterialForm, SubjectForm
-from .models import Subject
+from .forms import QuestionForm, StudyMaterialForm, SubjectForm
+from .models import Question, Subject
 from django.db.models import Q
 
 # Create your views here.
@@ -181,3 +181,37 @@ def upload_study_material_view(request):
     else:
         form = StudyMaterialForm(user=request.user)
     return render(request, "study_mate/upload.html", {"form": form})
+
+@login_required(login_url='login')
+def ask_question_view(request):
+    if request.method == "POST":
+        form=QuestionForm(
+         request.POST,
+         user=request.user
+        )
+        
+        if form.is_valid():
+            question=form.save(commit=False)
+            question.user=request.user
+            question.save()
+            
+            messages.success(
+                request,
+                "Your question has been submitted successfully."
+            )
+            return redirect("ask_question")
+    else:
+        form=QuestionForm(user=request.user)
+        
+    recent_questions=Question.objects.filter(
+        user=request.user).select_related(
+            "subject",
+            "material"
+    ).order_by("-created_at")[:4]
+        
+    return render(request,"study_mate/ask.html",
+    {
+        "form":form,
+        "recent_questions":recent_questions
+    } 
+    )
