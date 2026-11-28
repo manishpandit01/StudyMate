@@ -1,4 +1,6 @@
 from asyncio import constants
+from encodings.punycode import T
+from pyexpat import model
 
 from django.db import models
 from django.contrib.auth.models import User
@@ -45,3 +47,17 @@ class StudyMaterial(models.Model):
     
     def __str__(self):
         return self.title
+    
+class Question(models.Model):
+    user=models.ForeignKey(User,on_delete=models.CASCADE,
+                           related_name="questions")
+    subject=models.ForeignKey(Subject,on_delete=models.CASCADE,related_name="questions")
+    material=models.ForeignKey(StudyMaterial,
+                               on_delete=models.SET_NULL,
+                               null=True,blank=True,related_name="questions")
+    question=models.TextField()
+    answer=models.TextField(blank=True)
+    created_at=models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return self.question[:50]
